@@ -5,8 +5,14 @@ import { ShoppingCart } from '@material-ui/icons';
 import logo from '../../assets/commerce.png';
 import useStyles from './styles';
 
-const Navbar = () => {
+const Navbar = ({ cart }) => {
     const classes = useStyles();
+    const cartLoading = !cart;
+
+    const MissingCart = () => {
+
+    }
+
 
     return (
         <>
@@ -19,9 +25,14 @@ const Navbar = () => {
                     <div className={classes.grow} />
                     <div className={classes.button}>
                         <IconButton aria-label="Show cart items" color="inherit">
-                            <Badge badgeContent={2} color="secondary">
+                        { cartLoading ? <Badge badgeContent={0} color="secondary">
                                 <ShoppingCart />
                             </Badge>
+                            :
+                            <Badge badgeContent={cart.total_items} color="secondary">
+                                <ShoppingCart />
+                            </Badge>
+                        }
                         </IconButton>
                     </div>
                 </Toolbar>
