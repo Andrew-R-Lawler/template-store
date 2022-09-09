@@ -4,7 +4,7 @@ import useStyles from './styles';
 
 const Cart = ({ cart }) => {
     const classes = useStyles();
-    const isEmpty = true;
+    const isEmpty = !cart.line_items.length;
 
     const EmptyCart = () => (
         <Typography variant="subtitle11">You have no items in your shopping cart, start adding some!</Typography>
