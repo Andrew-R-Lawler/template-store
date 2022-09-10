@@ -7,7 +7,6 @@ import { commerce } from '../../lib/commerce';
 
 const Cart = ({ cart, handleUpdateCartQty, handleRemoveFromCart, handleEmptyCart }) => {
     const classes = useStyles();
-    const cartLoading = !cart;
 
     const EmptyCart = () => (
         <Typography variant="subtitle11">
