@@ -9,11 +9,6 @@ const Navbar = ({ cart }) => {
     const classes = useStyles();
     const cartLoading = !cart;
 
-    const MissingCart = () => {
-
-    }
-
-
     return (
         <>
             <AppBar position="fixed" className={classes.appBar} color="inherit">
@@ -25,7 +20,8 @@ const Navbar = ({ cart }) => {
                     <div className={classes.grow} />
                     <div className={classes.button}>
                         <IconButton aria-label="Show cart items" color="inherit">
-                        { cartLoading ? <Badge badgeContent={0} color="secondary">
+                        { cartLoading ? 
+                            <Badge badgeContent={0} color="secondary">
                                 <ShoppingCart />
                             </Badge>
                             :
