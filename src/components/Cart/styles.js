@@ -26,4 +26,7 @@ export default makeStyles((theme) => ({
     width: '100%',
     justifyContent: 'space-between',
   },
+  media: {
+    height: 260,
+  },
 }));
