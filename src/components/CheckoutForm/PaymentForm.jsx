@@ -9,11 +9,9 @@ const stripePromise = loadStripe(process.env.REACT_APP_STRIPE_PUBLIC_KEY);
 const PaymentForm = ({ checkoutToken, backStep, shippingData, onCaptureCheckout, nextStep }) => {
     const handleSubmit = (event, elements, stripe) => {
         event.preventDefault();
-
         if(!stripe || !elements) return;
-
         const cardElement = elements.getElement(CardElement);
-
+        console.log(cardElement);
         const { error, paymentMethod } = stripe.createPaymentMethod({ type: 'card', card: cardElement });
 
         if (error) {
@@ -32,17 +30,19 @@ const PaymentForm = ({ checkoutToken, backStep, shippingData, onCaptureCheckout,
                     town_city: shippingData.city, 
                     county_state: shippingData.shippingSubdivision, 
                     postal_zip_code: shippingData.zip, 
-                    country: shippingData.shippingCountry
+                    country: shippingData.shippingCountry,
                 },
                 fulfillment: { shipping_method: shippingData.shippingOption },
                 payment: {
+                    card: {
+                        token: cardElement.id,
+                    },
                     gateway: 'stripe',
                     stripe: {
                         payment_method_id: paymentMethod
                     },
                 },
             }
-            console.log(shippingData)
             onCaptureCheckout(checkoutToken.id, orderData);
             nextStep();
         }

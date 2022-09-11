@@ -1,9 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { InputLabel, Select, MenuItem, Button, Grid, Typography } from '@material-ui/core';
-import { useForm, FormProvider } from 'react-hook-form';
-import FormInput from './FormInput';
+import { InputLabel, Select, MenuItem, Button, Grid, Typography, TextField } from '@material-ui/core';
+import { useForm, FormProvider, setValue } from 'react-hook-form';
 import { Link } from 'react-router-dom';
-
 import { commerce } from '../../lib/commerce';
 
 const AddressForm = ({ checkoutToken, cart, next, nextStep }) => {
@@ -13,6 +11,12 @@ const AddressForm = ({ checkoutToken, cart, next, nextStep }) => {
     const [shippingSubdivision, setShippingSubdivision] = useState('');
     const [shippingOptions, setShippingOptions] = useState([]);
     const [shippingOption, setShippingOption] = useState('');
+    const [firstName, setFirstName] = useState('');
+    const [lastName, setLastName] = useState('');
+    const [address1, setAddress1] = useState('');
+    const [email, setEmail] = useState('');
+    const [city, setCity] = useState('');
+    const [zip, setZip] = useState('');
 
     const methods = useForm();
 
@@ -50,19 +54,43 @@ const AddressForm = ({ checkoutToken, cart, next, nextStep }) => {
         if(shippingSubdivision) fetchShippingOptions(checkoutToken.id, shippingCountry, shippingSubdivision);
     }, [shippingSubdivision])
 
+    const handleFirstNameChange = event => {
+        setFirstName(event.target.value);
+      };
+    
+    const handleLastNameChange = event => {
+        setLastName(event.target.value);
+    };
+
+    const handleAddress1Change = event => {
+        setAddress1(event.target.value);
+    };
+    
+    const handleEmailChange = event => {
+        setEmail(event.target.value);
+        };
+
+    const handleCityChange = event => {
+        setCity(event.target.value);
+        };
+
+    const handleZipChange = event => {
+        setZip(event.target.value);
+        };
+
   return (
     <>
         {console.log(checkoutToken)}
         <Typography variant="h6" gutterBottom>Shipping Address</Typography>
         <FormProvider {...methods}>
-            <form onSubmit={methods.handleSubmit((data) => next({ ...data, shippingCountry, shippingSubdivision, shippingOption }))}>
+            <form onSubmit={methods.handleSubmit(() => next({ firstName, lastName, address1, email, city, zip, shippingCountry, shippingSubdivision, shippingOption }))}>
                 <Grid container spacing = {3}>
-                    <FormInput required name="firstName" label="First Name" />
-                    <FormInput required name="lasName" label="Last Name" />
-                    <FormInput required name="address1" label="Address" />
-                    <FormInput required name="email" label="E-Mail" />
-                    <FormInput required name="city" label="City" />
-                    <FormInput required name="zip" label="ZIP / Postal Code" />
+                    <TextField required name="firstName" label="First Name" onChange={handleFirstNameChange} value={firstName} />
+                    <TextField required name="lastName" label="Last Name" onChange={handleLastNameChange} value={lastName}/>
+                    <TextField required name="address1" label="Address" onChange={handleAddress1Change} value={address1} />
+                    <TextField required name="email" label="E-Mail" onChange={handleEmailChange} value={email} />
+                    <TextField required name="city" label="City" onChange={handleCityChange} value={city} />
+                    <TextField required name="zip" label="ZIP / Postal Code" onChange={handleZipChange} value={zip} />
                     <Grid item xs={12} sm={6}>
                         <InputLabel>Shipping Country</InputLabel>
                         <Select value={shippingCountry} fullWidth onChange={(e) => setShippingCountry(e.target.value)}>
