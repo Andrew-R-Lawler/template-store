@@ -11,13 +11,13 @@ const Checkout = ({ cart, order, onCaptureCheckout, error }) => {
     const [activeStep, setActiveStep] = useState(0);
     const [checkoutToken, setCheckoutToken] = useState(null);
     const [shippingData, setShippingData] = useState({});
+    const [paymentIntent, setPaymentIntent] = useState({});
     const classes = useStyles();
 
     useEffect(() => {
         const generateToken = async () => {
             try {
                 const token = await commerce.checkout.generateToken(cart.id, {type: 'cart'})
-                console.log(token);
                 setCheckoutToken(token);
             } catch (error) {
 
@@ -40,12 +40,36 @@ const Checkout = ({ cart, order, onCaptureCheckout, error }) => {
         </div>
     )
 
+    const fetchPaymentIntent = async (checkoutToken) => {
+        const newPaymentIntent = await fetch('http://localhost:5000/api/payment', {
+            mode: 'cors',
+            method: 'POST',
+            body: JSON.stringify({ subtotal: checkoutToken.subtotal.raw }), // The data
+            headers: {
+                'Content-type': 'application/json' // The type of data you're sending
+            },
+        }).then(res => {
+            if (res.status !== 200) {
+                console.log("error")
+                console.log(res)
+            } else {
+                setPaymentIntent(newPaymentIntent);
+                console.log(newPaymentIntent)
+            }
+        });
+    };
+
+    useEffect(() => {
+        fetchPaymentIntent(checkoutToken);
+    },);
+
     const Form = () => (activeStep === 0)
         ? <AddressForm cart={cart} checkoutToken={checkoutToken} next={next}/>
-        : <PaymentForm shippingData={shippingData} checkoutToken={checkoutToken} backStep={backStep} onCaptureCheckout={onCaptureCheckout} nextStep={nextStep}/>;
+        : <PaymentForm shippingData={shippingData} checkoutToken={checkoutToken} backStep={backStep} onCaptureCheckout={onCaptureCheckout} nextStep={nextStep} paymentIntent={paymentIntent}/>;
 
   return (
     <>
+        {console.log(paymentIntent)}
         <div className={classes.toolbar} />
         <main className={classes.layout}>
             <Paper className={classes.paper}>

@@ -9,6 +9,7 @@ const App = () => {
     const [order, setOrder] = useState({});
     const [errorMessage, setErrorMessage] = useState('');
 
+
     const fetchProducts = async () => {
         const { data } = await commerce.products.list();
 
@@ -26,14 +27,17 @@ const App = () => {
 
     const handleUpdateCartQty = async (productId, quantity) => {
         const { cart } = await commerce.cart.update(productId, {quantity});
+        fetchCart();
     }
 
     const handleRemoveFromCart = async (productId) => {
         const { cart } = await commerce.cart.remove(productId);
+        fetchCart();
     }
 
     const handleEmptyCart = async () => {
         const { cart } = await commerce.cart.empty();
+        fetchCart();
     }
 
     const refreshCart = async () => {

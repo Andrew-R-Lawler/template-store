@@ -1,54 +1,46 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Typography, Button, Divider } from '@material-ui/core';
-import { Elements, CardElement, ElementsConsumer } from '@stripe/react-stripe-js';
+import { Elements, PaymentElement, ElementsConsumer } from '@stripe/react-stripe-js';
 import { loadStripe } from '@stripe/stripe-js';
 import Review from './Checkout/Review';
 
+const PaymentForm = ({ checkoutToken, backStep, shippingData, onCaptureCheckout, nextStep, paymentIntent }) => {
+
 const stripePromise = loadStripe(process.env.REACT_APP_STRIPE_PUBLIC_KEY);
-
-const PaymentForm = ({ checkoutToken, backStep, shippingData, onCaptureCheckout, nextStep }) => {
-    const handleSubmit = (event, elements, stripe) => {
-        event.preventDefault();
-        if(!stripe || !elements) return;
-        const cardElement = elements.getElement(CardElement);
-        console.log(cardElement);
-        const { error, paymentMethod } = stripe.createPaymentMethod({ type: 'card', card: cardElement });
-
-        if (error) {
-            console.log(error)
-        } else {
-            const orderData = {
-                line_items: checkoutToken.line_items,
-                customer: {
-                    firstname: shippingData.firstName,
-                    lastname: shippingData.lastName, 
-                    email: shippingData.email,
+const handleSubmit = async (event, elements, stripe) => {
+    event.preventDefault();
+    const paymentElement = elements.getElement(PaymentElement);
+        const orderData = {
+            line_items: checkoutToken.line_items,
+            customer: {
+                firstname: shippingData.firstName,
+                lastname: shippingData.lastName, 
+                email: shippingData.email,
+            },
+            shipping: {
+                name : 'Primary', 
+                street: shippingData.address1, 
+                town_city: shippingData.city, 
+                county_state: shippingData.shippingSubdivision, 
+                postal_zip_code: shippingData.zip, 
+                country: shippingData.shippingCountry,
+            },
+            fulfillment: { shipping_method: shippingData.shippingOption },
+            payment: {
+                card: {
+                    token: checkoutToken.id,
                 },
-                shipping: {
-                    name : 'Primary', 
-                    street: shippingData.address1, 
-                    town_city: shippingData.city, 
-                    county_state: shippingData.shippingSubdivision, 
-                    postal_zip_code: shippingData.zip, 
-                    country: shippingData.shippingCountry,
+                gateway: 'stripe',
+                stripe: {
+                    payment_method_id: '',
                 },
-                fulfillment: { shipping_method: shippingData.shippingOption },
-                payment: {
-                    card: {
-                        token: cardElement.id,
-                    },
-                    gateway: 'stripe',
-                    stripe: {
-                        payment_method_id: paymentMethod
-                    },
-                },
+            },
             }
-            onCaptureCheckout(checkoutToken.id, orderData);
-            nextStep();
-        }
+            {console.log(checkoutToken)}
+        onCaptureCheckout(checkoutToken.id, orderData);
+         nextStep();
     }
-
-  return (
+    if (paymentIntent) return (
     <>
         <Review checkoutToken={checkoutToken}/>
         <Divider />
@@ -56,7 +48,7 @@ const PaymentForm = ({ checkoutToken, backStep, shippingData, onCaptureCheckout,
         <Elements stripe={stripePromise}>
         <ElementsConsumer>{({ elements, stripe }) => (
           <form onSubmit={(e) => handleSubmit(e, elements, stripe)}>
-            <CardElement />
+            <PaymentElement paymentIntent={paymentIntent} />
             <br /> <br />
             <div style={{ display: 'flex', justifyContent: 'space-between' }}>
               <Button variant="outlined" onClick={backStep}>Back</Button>
