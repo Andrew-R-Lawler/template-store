@@ -5,11 +5,16 @@ import { loadStripe } from '@stripe/stripe-js';
 import Review from './Checkout/Review';
 
 const PaymentForm = ({ checkoutToken, backStep, shippingData, onCaptureCheckout, nextStep, paymentIntent }) => {
-
 const stripePromise = loadStripe(process.env.REACT_APP_STRIPE_PUBLIC_KEY);
 const handleSubmit = async (event, elements, stripe) => {
     event.preventDefault();
+    if (!stripe || !elements) return;
     const paymentElement = elements.getElement(PaymentElement);
+    const { error, paymentMethod } = await stripe.createPaymentMethod({ type: 'card', card: paymentElement });
+
+    if (error) {
+        console.log('[error]', error)
+    } else {
         const orderData = {
             line_items: checkoutToken.line_items,
             customer: {
@@ -32,15 +37,14 @@ const handleSubmit = async (event, elements, stripe) => {
                 },
                 gateway: 'stripe',
                 stripe: {
-                    payment_method_id: '',
+                    payment_method_id: paymentMethod.id,
                 },
             },
-            }
-            {console.log(checkoutToken)}
+        };
         onCaptureCheckout(checkoutToken.id, orderData);
-         nextStep();
+        nextStep();
     }
-    if (paymentIntent) return (
+    return (
     <>
         <Review checkoutToken={checkoutToken}/>
         <Divider />
@@ -63,5 +67,6 @@ const handleSubmit = async (event, elements, stripe) => {
     </>
   )
 }
+};
 
-export default PaymentForm
+export default PaymentForm;

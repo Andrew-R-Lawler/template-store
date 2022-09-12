@@ -4,14 +4,21 @@ import useStyles from './styles';
 import AddressForm from '../AddressForm';
 import PaymentForm from '../PaymentForm';
 import { commerce } from '../../../lib/commerce';
+import axios from 'axios';
 
 const steps = ['Shipping Address', 'Payment Details']
+let axiosConfig = {
+    headers: {
+        'Content-Type': 'application/json;charset=UTF-8',
+        "Access-Control-Allow-Origin": "*",
+    }
+  };
 
 const Checkout = ({ cart, order, onCaptureCheckout, error }) => {
     const [activeStep, setActiveStep] = useState(0);
     const [checkoutToken, setCheckoutToken] = useState(null);
     const [shippingData, setShippingData] = useState({});
-    const [paymentIntent, setPaymentIntent] = useState({});
+    const [paymentIntent, setPaymentIntent] = useState('');
     const classes = useStyles();
 
     useEffect(() => {
@@ -41,27 +48,16 @@ const Checkout = ({ cart, order, onCaptureCheckout, error }) => {
     )
 
     const fetchPaymentIntent = async (checkoutToken) => {
-        const newPaymentIntent = await fetch('http://localhost:5000/api/payment', {
-            mode: 'cors',
-            method: 'POST',
-            body: JSON.stringify({ subtotal: checkoutToken.subtotal.raw }), // The data
-            headers: {
-                'Content-type': 'application/json' // The type of data you're sending
-            },
-        }).then(res => {
-            if (res.status !== 200) {
-                console.log("error")
-                console.log(res)
-            } else {
-                setPaymentIntent(newPaymentIntent);
-                console.log(newPaymentIntent)
-            }
-        });
-    };
+        const newPaymentIntent = await axios.post('http://localhost:5000/api/payment', { subtotal: checkoutToken.subtotal.raw }, axiosConfig);
+        setPaymentIntent(newPaymentIntent.data.paymentIntent);
+        console.log(newPaymentIntent.data.paymentIntent);
+        };
+
+
 
     useEffect(() => {
         fetchPaymentIntent(checkoutToken);
-    },);
+    },[]);
 
     const Form = () => (activeStep === 0)
         ? <AddressForm cart={cart} checkoutToken={checkoutToken} next={next}/>
@@ -69,7 +65,6 @@ const Checkout = ({ cart, order, onCaptureCheckout, error }) => {
 
   return (
     <>
-        {console.log(paymentIntent)}
         <div className={classes.toolbar} />
         <main className={classes.layout}>
             <Paper className={classes.paper}>
