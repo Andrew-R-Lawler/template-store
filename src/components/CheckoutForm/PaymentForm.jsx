@@ -1,74 +1,87 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Typography, Button, Divider } from '@material-ui/core';
 import { Elements, PaymentElement, ElementsConsumer } from '@stripe/react-stripe-js';
 import { loadStripe } from '@stripe/stripe-js';
+import axios from 'axios';
 import Review from './Checkout/Review';
-import NewCheckoutForm from './NewCheckoutForm';
 
-const PaymentForm = ({ checkoutToken, backStep, shippingData, onCaptureCheckout, nextStep, paymentIntent }) => {
 const stripePromise = loadStripe(process.env.REACT_APP_STRIPE_PUBLIC_KEY);
-const handleSubmit = async (event, elements, stripe) => {
+
+const PaymentForm = ({ checkoutToken, nextStep, backStep, shippingData, onCaptureCheckout }) => {
+
+    const [paymentIntent, setPaymentIntent] = useState('');
+    const [paymentId, setPaymentId] = useState('');
+
+    const axiosConfig = {
+        headers: {
+            'Content-Type': 'application/json;charset=UTF-8',
+            "Access-Control-Allow-Origin": "*",
+        }
+      };
+    
+    const options = {
+        // passing the client secret obtained in step 2
+        clientSecret: paymentIntent,
+    };
+
+    const fetchPaymentIntent = async (checkoutToken) => {
+        await axios.post('http://localhost:5000/api/payment', {subtotal: checkoutToken.subtotal.raw}, axiosConfig)
+        .then(function (response) {
+            console.log(response, 'response');
+            setPaymentIntent(response.data.paymentIntent);
+        })
+        .catch(function (error) {
+            console.log(error, 'error');
+        })
+    };
+
+    const handleSubmit = async (event, elements, stripe) => {
     event.preventDefault();
+
     if (!stripe || !elements) return;
+
     const paymentElement = elements.getElement(PaymentElement);
+
     const { error, paymentMethod } = await stripe.createPaymentMethod({ type: 'card', card: paymentElement });
 
     if (error) {
-        console.log('[error]', error)
+      console.log('[error]', error);
     } else {
-        const orderData = {
-            line_items: checkoutToken.line_items,
-            customer: {
-                firstname: shippingData.firstName,
-                lastname: shippingData.lastName, 
-                email: shippingData.email,
-            },
-            shipping: {
-                name : 'Primary', 
-                street: shippingData.address1, 
-                town_city: shippingData.city, 
-                county_state: shippingData.shippingSubdivision, 
-                postal_zip_code: shippingData.zip, 
-                country: shippingData.shippingCountry,
-            },
-            fulfillment: { shipping_method: shippingData.shippingOption },
-            payment: {
-                card: {
-                    token: checkoutToken.id,
-                },
-                gateway: 'stripe',
-                stripe: {
-                    payment_method_id: paymentMethod.id,
-                },
-            },
-        };
-        onCaptureCheckout(checkoutToken.id, orderData);
-        nextStep();
-    }
+      const orderData = {
+        line_items: checkoutToken.live.line_items,
+        customer: { firstname: shippingData.firstName, lastname: shippingData.lastName, email: shippingData.email },
+        shipping: { name: 'International', street: shippingData.address1, town_city: shippingData.city, county_state: shippingData.shippingSubdivision, postal_zip_code: shippingData.zip, country: shippingData.shippingCountry },
+        fulfillment: { shipping_method: shippingData.shippingOption },
+        payment: {
+          gateway: 'stripe',
+          stripe: {
+            payment_method_id: paymentMethod.id,
+          },
+        },
+      };
+      onCaptureCheckout(checkoutToken.id, orderData);
+      nextStep();
+    };
+  };
 
-    return (
+  useEffect(() => {
+    fetchPaymentIntent(checkoutToken);
+    console.log(paymentId)
+},[]);
+
+  return (
     <>
-        <Review checkoutToken={checkoutToken}/>
-        <Divider />
-        <Typography variant="h6" gutterBottom style={{ margin: '20px 0'}}>Payment method</Typography>
-        <Elements stripe={stripePromise}>
-        <ElementsConsumer>{({ elements, stripe }) => (
-          <form onSubmit={(e) => handleSubmit(e, elements, stripe)}>
-            <PaymentElement paymentIntent={paymentIntent} />
-            <br /> <br />
-            <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-              <Button variant="outlined" onClick={backStep}>Back</Button>
-              <Button type="submit" variant="contained" disabled={!stripe} color="primary">
-                Pay {checkoutToken.subtotal.formatted_with_symbol}
-              </Button>
-            </div>
-          </form>
-        )}
-        </ElementsConsumer>
+      <Review checkoutToken={checkoutToken} />
+      <Divider />
+      <Typography variant="h6" gutterBottom style={{ margin: '20px 0' }}>Payment method</Typography>
+      <Elements stripe={stripePromise} options={options}>
+            <form>
+                <PaymentElement />
+                <button>Submit</button>
+            </form>
       </Elements>
     </>
-  )
-}
+  );
 };
 
 export default PaymentForm;

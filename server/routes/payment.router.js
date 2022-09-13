@@ -15,8 +15,9 @@ router.post("/", async (req, res) => {
     });
     res.send({
       paymentIntent: paymentIntent.client_secret,
+      id: paymentIntent.id
     });
-    console.log(paymentIntent.client_secret)
+    console.log(paymentIntent.id);
   });
 
 module.exports = router;
