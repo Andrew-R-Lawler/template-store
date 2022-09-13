@@ -3,6 +3,7 @@ import { Typography, Button, Divider } from '@material-ui/core';
 import { Elements, PaymentElement, ElementsConsumer } from '@stripe/react-stripe-js';
 import { loadStripe } from '@stripe/stripe-js';
 import Review from './Checkout/Review';
+import NewCheckoutForm from './NewCheckoutForm';
 
 const PaymentForm = ({ checkoutToken, backStep, shippingData, onCaptureCheckout, nextStep, paymentIntent }) => {
 const stripePromise = loadStripe(process.env.REACT_APP_STRIPE_PUBLIC_KEY);
@@ -44,6 +45,7 @@ const handleSubmit = async (event, elements, stripe) => {
         onCaptureCheckout(checkoutToken.id, orderData);
         nextStep();
     }
+
     return (
     <>
         <Review checkoutToken={checkoutToken}/>
