@@ -2,37 +2,21 @@ import React, { useState, useEffect } from 'react';
 import { Typography, Button, Divider } from '@material-ui/core';
 import { Elements, PaymentElement, ElementsConsumer } from '@stripe/react-stripe-js';
 import { loadStripe } from '@stripe/stripe-js';
-import axios from 'axios';
 import Review from './Checkout/Review';
+import { connect } from 'react-redux';
 
 const stripePromise = loadStripe(process.env.REACT_APP_STRIPE_PUBLIC_KEY);
 
-const PaymentForm = ({ checkoutToken, nextStep, backStep, shippingData, onCaptureCheckout }) => {
+const PaymentForm = ({ props, checkoutToken, nextStep, backStep, shippingData, onCaptureCheckout }) => {
 
     const [paymentIntent, setPaymentIntent] = useState('');
     const [paymentId, setPaymentId] = useState('');
 
-    const axiosConfig = {
-        headers: {
-            'Content-Type': 'application/json;charset=UTF-8',
-            "Access-Control-Allow-Origin": "*",
-        }
-      };
+
     
     const options = {
         // passing the client secret obtained in step 2
         clientSecret: paymentIntent,
-    };
-
-    const fetchPaymentIntent = async (checkoutToken) => {
-        await axios.post('http://localhost:5000/api/payment', {subtotal: checkoutToken.subtotal.raw}, axiosConfig)
-        .then(function (response) {
-            console.log(response, 'response');
-            setPaymentIntent(response.data.paymentIntent);
-        })
-        .catch(function (error) {
-            console.log(error, 'error');
-        })
     };
 
     const handleSubmit = async (event, elements, stripe) => {
@@ -64,10 +48,6 @@ const PaymentForm = ({ checkoutToken, nextStep, backStep, shippingData, onCaptur
     };
   };
 
-  useEffect(() => {
-    fetchPaymentIntent(checkoutToken);
-    console.log(paymentId)
-},[]);
 
   return (
     <>
@@ -84,4 +64,10 @@ const PaymentForm = ({ checkoutToken, nextStep, backStep, shippingData, onCaptur
   );
 };
 
-export default PaymentForm;
+const mapStateToProps = state => {
+    return {
+        state
+    }
+}
+
+export default connect(mapStateToProps)(PaymentForm);

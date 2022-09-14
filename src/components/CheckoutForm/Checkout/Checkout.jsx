@@ -6,11 +6,12 @@ import { commerce } from '../../../lib/commerce';
 import { Elements } from '@stripe/react-stripe-js';
 import { loadStripe } from '@stripe/stripe-js';
 import PaymentForm from '../PaymentForm';
+import { connect } from 'react-redux';
 
 const steps = ['Shipping Address', 'Payment Details']
 
 
-const Checkout = ({ cart, order, onCaptureCheckout, error }) => {
+const Checkout = ({ props, cart, order, onCaptureCheckout, error }) => {
     const [activeStep, setActiveStep] = useState(0);
     const [checkoutToken, setCheckoutToken] = useState(null);
     const [shippingData, setShippingData] = useState({});
@@ -44,12 +45,15 @@ const Checkout = ({ cart, order, onCaptureCheckout, error }) => {
             Confirmation
         </div>
     )
+    
+    const getPaymentIntent = () => {
+        this.props.dispatch({ type: 'GET_PAYMENT_SECRET', payload: checkoutToken })
+    }
 
-
-
-
-
-
+    useEffect(() => {
+        getPaymentIntent();
+      },[]);
+    
 
     const Form = () => (activeStep === 0)
         ? <AddressForm cart={cart} checkoutToken={checkoutToken} next={next}/>
@@ -75,4 +79,10 @@ const Checkout = ({ cart, order, onCaptureCheckout, error }) => {
   )
 }
 
-export default Checkout
+const mapStateToProps = state => {
+    return {
+        props: state
+    }
+}
+
+export default connect(mapStateToProps)(Checkout);
