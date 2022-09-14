@@ -3,11 +3,10 @@ import { Typography, Button, Divider } from '@material-ui/core';
 import { Elements, PaymentElement, ElementsConsumer } from '@stripe/react-stripe-js';
 import { loadStripe } from '@stripe/stripe-js';
 import Review from './Checkout/Review';
-import { connect } from 'react-redux';
 
 const stripePromise = loadStripe(process.env.REACT_APP_STRIPE_PUBLIC_KEY);
 
-const PaymentForm = ({ props, checkoutToken, nextStep, backStep, shippingData, onCaptureCheckout }) => {
+const PaymentForm = ({ checkoutToken, nextStep, backStep, shippingData, onCaptureCheckout }) => {
 
     const [paymentIntent, setPaymentIntent] = useState('');
     const [paymentId, setPaymentId] = useState('');
@@ -57,17 +56,13 @@ const PaymentForm = ({ props, checkoutToken, nextStep, backStep, shippingData, o
       <Elements stripe={stripePromise} options={options}>
             <form>
                 <PaymentElement />
-                <button>Submit</button>
+                <Button>Submit</Button>
             </form>
       </Elements>
     </>
   );
 };
 
-const mapStateToProps = state => {
-    return {
-        state
-    }
-}
 
-export default connect(mapStateToProps)(PaymentForm);
+
+export default PaymentForm;

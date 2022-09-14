@@ -6,6 +6,7 @@ const stripe = Stripe('sk_test_51LgN3XGgp3GmJutylJb1ddRJLyrnofCLcRyJEO25EQrpANTl
 
 router.post("/", async (req, res) => {
     // Create a PaymentIntent with the order amount and currency
+    console.log(req.body)
     const paymentIntent = await stripe.paymentIntents.create({
       amount: req.body.subtotal,
       currency: "usd",

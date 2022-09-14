@@ -1,12 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import { Paper, Stepper, Step, StepLabel, Typography, CircularProgress, Divider, Button } from '@material-ui/core';
+import { Paper, Stepper, Step, StepLabel, Typography, CircularProgress } from '@material-ui/core';
 import useStyles from './styles';
 import AddressForm from '../AddressForm';
 import { commerce } from '../../../lib/commerce';
-import { Elements } from '@stripe/react-stripe-js';
 import { loadStripe } from '@stripe/stripe-js';
 import PaymentForm from '../PaymentForm';
-import { connect } from 'react-redux';
+import { useSelector, useDispatch } from 'react-redux';
+import { addPaymentAsync, showPayment } from '../../../redux/payment-api-slice';
 
 const steps = ['Shipping Address', 'Payment Details']
 
@@ -15,9 +15,13 @@ const Checkout = ({ props, cart, order, onCaptureCheckout, error }) => {
     const [activeStep, setActiveStep] = useState(0);
     const [checkoutToken, setCheckoutToken] = useState(null);
     const [shippingData, setShippingData] = useState({});
-
+    const payment = useSelector(showPayment);
+    const dispatch = useDispatch();
+    const [newPaymentIntent, setNewPaymentIntent] = useState({
+        id: '',
+        payment: '',
+    })
     const classes = useStyles();
-
     const stripePromise = loadStripe(process.env.REACT_APP_STRIPE_PUBLIC_KEY);
     
     useEffect(() => {
@@ -45,14 +49,13 @@ const Checkout = ({ props, cart, order, onCaptureCheckout, error }) => {
             Confirmation
         </div>
     )
+    const addPaymentIntent = () => {
+        dispatch(addPaymentAsync(checkoutToken));
+    };
     
-    const getPaymentIntent = () => {
-        this.props.dispatch({ type: 'GET_PAYMENT_SECRET', payload: checkoutToken })
-    }
-
     useEffect(() => {
-        getPaymentIntent();
-      },[]);
+        addPaymentIntent();
+      },[checkoutToken]);
     
 
     const Form = () => (activeStep === 0)
@@ -79,10 +82,4 @@ const Checkout = ({ props, cart, order, onCaptureCheckout, error }) => {
   )
 }
 
-const mapStateToProps = state => {
-    return {
-        props: state
-    }
-}
-
-export default connect(mapStateToProps)(Checkout);
+export default Checkout;
